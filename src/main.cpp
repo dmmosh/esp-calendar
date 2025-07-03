@@ -3,20 +3,24 @@
 #include "freertos/task.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <TFT_eSPI.h>  // Include the graphics library (after User_Setup.h is configured)
+#define BACKLIGHT 18
 
-#define LED 2
-#define pause(x) vTaskDelay(x/portTICK_PERIOD_MS)
 
+TFT_eSPI tft = TFT_eSPI();  // Create screen object
 
 void setup() {
-  // put your setup code here, to run once:
-  
+  pinMode(BACKLIGHT,OUTPUT);
+  analogWrite(BACKLIGHT,180);
+  tft.init();                 // Initialize TFT
+  tft.setRotation(1);         // Set screen orientation (0-3)
+
+  tft.setTextColor(TFT_GREEN, TFT_BLACK); // Text color with background
+  tft.setTextSize(2);         // Scale text (1-7)
+  tft.setCursor(0, 0);      // X, Y position
+  tft.println("Hello, World!");
 }
 
 void loop() {
-  digitalWrite(LED,HIGH);
-  delay(1000);
-  digitalWrite(LED,LOW);
-  delay(1000);
-  // put your main code here, to run repeatedly:
+  // Nothing here
 }

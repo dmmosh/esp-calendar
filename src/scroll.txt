@@ -1,0 +1,50 @@
+// CODE FOR TTHE SCROLL WHEEL TO WORK 
+// GROUND IS ON THE LEFT WITH WHEEL FACING OUTWARD 
+
+
+#include <Arduino.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+const int pinA = 12;   // Channel A
+const int pinB = 13;   // Channel B
+
+int encoderPos = 0;
+int lastEncoded = 0;
+bool up = false;
+#define UP (up)
+#define DOWN (!up)
+
+void setup() {
+  pinMode(pinA, INPUT_PULLUP);
+  pinMode(pinB, INPUT_PULLUP);
+  Serial.begin(115200);
+
+  int MSB = digitalRead(pinA); // Most Significant Bit
+  int LSB = digitalRead(pinB); // Least Significant Bit
+  lastEncoded = (MSB << 1) | LSB;
+}
+
+void loop() {
+  int MSB = digitalRead(pinA);
+  int LSB = digitalRead(pinB);
+  int encoded = (MSB << 1) | LSB;
+  int sum = (lastEncoded << 2) | encoded;
+
+  // Valid transition cases
+  if (sum == 0b1101 || sum == 0b0100 || sum == 0b0010 || sum == 0b1011) {
+    encoderPos++;
+    up = true;
+  }
+  if (sum == 0b1110 || sum == 0b0111 || sum == 0b0001 || sum == 0b1000) {
+    encoderPos--;
+    up = false;
+  }
+
+  lastEncoded = encoded;
+
+  Serial.println(encoderPos);
+  delay(2);  // Small delay for stability
+}

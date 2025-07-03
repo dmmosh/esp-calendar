@@ -1,15 +1,4 @@
-#include <Arduino.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <WiFi.h>
-#include <TFT_eSPI.h>
-//#include "BluetoothSerial.h"
-
-// DISPLAY DRIVER: HX8357D_DRIVER
-#define LED 2 // led
-#define BACKLIGHT 5 //backlight cpio
+#include "header.h"
 TFT_eSPI tft = TFT_eSPI(); // Create TFT object
 WiFiServer server(80);
 // char* ssid = getenv("WIFI_NAME"); // wifi name
@@ -19,82 +8,10 @@ WiFiServer server(80);
 const char* ssid = WIFI_SSID;
 const char * pass = WIFI_PASS;
 
-static unsigned int x_set = 5; 
-static unsigned int y_set = 5; 
+unsigned int x_set = 5; 
+unsigned int y_set = 5; 
 
 
-void led(void* args){
-  int i = 1000; 
-  while(1){
-    digitalWrite(LED, HIGH);
-    vTaskDelay(i/portTICK_PERIOD_MS);
-    digitalWrite(LED, LOW);
-    vTaskDelay(i/portTICK_PERIOD_MS);
-    i= (int)((float)i /1.2);
-    if(i == 0){
-      i = 1000;
-    }
-    //Serial.printf("%i\n", i);
-  }
-}
-
-
-template<typename ...Args>
-void debug(const char* format, Args... args){
-
-
-  tft.setCursor(x_set, y_set);
-
-  if constexpr (sizeof...(args) == 0){
-    tft.print(format);
-  } else {
-    tft.printf(format, args...);
-  }
-
-  y_set+= 10;
-  if(y_set>=130){
-    y_set = 5;
-  }
-
-  //x_set += 10;
-}
-// if tthe wifi goes out, the esp simply rescans the wifi
-// clears the screen
-void wifi_boot(){
-  tft.fillScreen(TFT_BLACK);
-  x_set = 5;
-  y_set = 5;
-  uint16_t seconds = 0;
-  while(!WiFi.isConnected()){
-    debug("\rconnecting %is", (unsigned int)seconds);
-    delay(1000);
-    seconds++;
-  }
-  server.begin();
-  debug("wifi connected %is", (unsigned int)seconds);
-  debug("ip: %s", WiFi.localIP().toString().c_str());
-  
-  tft.setCursor(x_set, y_set);  // Set cursor position
-}
-
-void vTaskMemoryUsage(void *pvParameters)
-{
-    while(1){
-    // Get the task handle
-    TaskHandle_t xTaskHandle = xTaskGetCurrentTaskHandle();
-    
-    // Get the high-water mark of the task's stack (bytes left)
-    UBaseType_t uxHighWaterMark = uxTaskGetStackHighWaterMark(xTaskHandle);
-    
-    // Optionally, print the stack size (this is the total stack size)
-    UBaseType_t uxTaskStackSize = configMINIMAL_STACK_SIZE; // Or your stack size
-    
-    debug("mem: %i | %i", uxHighWaterMark, uxTaskStackSize);
-    vTaskDelay(1000/portTICK_PERIOD_MS);
-    }
-
-
-}
 
 /*
 pio run; git-all; pio run --target upload && pio device monitor -b 115200

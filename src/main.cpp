@@ -10,14 +10,13 @@
 
 void setup() {
   // put your setup code here, to run once:
-  while(true){
-    digitalWrite(LED,HIGH);
-    delay(1000);
-    digitalWrite(LED,LOW);
-    delay(1000);
-  }
+  
 }
 
 void loop() {
+  digitalWrite(LED,HIGH);
+  delay(1000);
+  digitalWrite(LED,LOW);
+  delay(1000);
   // put your main code here, to run repeatedly:
 }

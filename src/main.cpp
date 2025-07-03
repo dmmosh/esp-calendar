@@ -39,22 +39,6 @@ void led(void* args){
 }
 
 
-// if tthe wifi goes out, the esp simply rescans the wifi
-// clears the screen
-void wifi_boot(){
-  uint16_t seconds = 0;
-  while(WiFi.status() != WL_CONNECTED){
-    debug("connecting %is", (unsigned int)seconds);
-    delay(1000);
-    seconds++;
-  }
-  server.begin();
-  debug("wifi connected %is", (unsigned int)seconds);
-  debug("ip: %s", WiFi.localIP().toString().c_str());
-  
-  tft.setCursor(x_set, y_set);  // Set cursor position
-}
-
 template<typename ...Args>
 void debug(const char* format, Args... args){
 
@@ -68,7 +52,29 @@ void debug(const char* format, Args... args){
   }
 
   y_set+= 10;
+  if(y_set>=130){
+    y_set = 5;
+  }
+
   //x_set += 10;
+}
+// if tthe wifi goes out, the esp simply rescans the wifi
+// clears the screen
+void wifi_boot(){
+  tft.fillScreen(TFT_BLACK);
+  x_set = 5;
+  y_set = 5;
+  uint16_t seconds = 0;
+  while(!WiFi.isConnected()){
+    debug("connecting %is", (unsigned int)seconds);
+    delay(1000);
+    seconds++;
+  }
+  server.begin();
+  debug("wifi connected %is", (unsigned int)seconds);
+  debug("ip: %s", WiFi.localIP().toString().c_str());
+  
+  tft.setCursor(x_set, y_set);  // Set cursor position
 }
 
 void vTaskMemoryUsage(void *pvParameters)
@@ -112,15 +118,16 @@ void setup() {
   //xTaskCreate(print_test, "debug test", 4000, NULL, 1, NULL);
 
   WiFi.begin(ssid, pass);
-
   
-  
-  ESP.restart();
 }
 
 
 void loop() {
+  if(!WiFi.isConnected()){
+    wifi_boot();
+  }
   WiFiClient client = server.available();  // listen for incoming clients
+
 
   if (client) {                     // if you get a client,
     Serial.println("New Client.");  // print a message out the serial port
@@ -170,6 +177,7 @@ void loop() {
     client.stop();
     Serial.println("Client Disconnected.");
   }
+  delay(2);
 }
 
 //LVGL CODE 
